@@ -1,0 +1,26 @@
+{
+  "name": "intercom-webhook-cost-controler",
+  "version": "1.0.0",
+  "description": "A Intercom Cost Control Bot - keeps your people count under limit.  This help limit monthly cost for intercom.  Also archives in dynamodb table.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/godfreyhobbs/intercom-webhook-cost-controler.git"
+  },
+  "keywords": [
+    "intercom",
+    "python",
+    "webhook"
+  ],
+  "author": "godfrey hobbs",
+  "bugs": {
+    "url": "https://github.com/godfreyhobbs/intercom-webhook-cost-controler/issues"
+  },
+  "homepage": "https://github.com/godfreyhobbs/intercom-webhook-cost-controler#readme",
+  "dependencies": {
+    "serverless": "^1.25.0"
+  }
+}
