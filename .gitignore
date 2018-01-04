@@ -1,5 +1,6 @@
 # for intercom api tokens/keys
 .env
+env.yml
 
 # Distribution / packaging
 .Python

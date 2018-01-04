@@ -24,7 +24,8 @@ provider:
 # you can overwrite defaults here
 #  stage: dev
   region: us-east-1
-
+  # see: http://www.goingserverless.com/blog/using-environment-variables-with-the-serverless-framework
+  environment: ${file(./env.yml)}
 # you can add packaging information here
 #package:
 #  include:
@@ -34,9 +35,15 @@ provider:
 #    - exclude-me.py
 #    - exclude-me-dir/**
 
+
 functions:
-  hello:
+  handlewebhook:
     handler: handler.hello
+    events:
+      - http:
+          path: userCreated
+          method: post
+          cors: true
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
