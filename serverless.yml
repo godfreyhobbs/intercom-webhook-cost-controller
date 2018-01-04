@@ -38,7 +38,7 @@ provider:
 
 functions:
   handlewebhook:
-    handler: handler.hello
+    handler: handler.webhook
     events:
       - http:
           path: userCreated

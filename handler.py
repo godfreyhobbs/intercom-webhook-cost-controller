@@ -39,13 +39,11 @@ def save_to_dynamodb(person):
         if 'longitude' in person['location_data']:
             person['location_data']['longitude'] = Decimal(str(person['location_data']['longitude']))
 
-
     email = ''
     if 'email' in person:
         email = person['email']
-    member_id = -1
     custom_attr = False
-    custom_attr_key = os.environ['CUSTOM_ATTR']
+    custom_attr_key = os.environ['CUSTOM_ATTR_KEY']
     if 'custom_attributes' in person:
         if custom_attr_key in person['custom_attributes']:
             custom_attr = person['custom_attributes'][custom_attr_key]
@@ -63,7 +61,7 @@ def save_to_dynamodb(person):
     )
 
 
-def hello(event, context):
+def webhook(event, context):
     print(os.environ['DYNAMODB_TABLE'])
 
     print(json.dumps(event))
