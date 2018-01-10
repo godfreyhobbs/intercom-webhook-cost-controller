@@ -1,4 +1,5 @@
 import os
+import time
 
 import boto3
 from boto3.dynamodb.conditions import Attr
@@ -72,7 +73,9 @@ def save_to_dynamodb(person, conv_count=0, deleted_date=False):
 def get_users_with_zero_chats():
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
     # consider adding limit to scan
-    filter = Attr('conv_count').eq('0') & Attr('deleted_date').not_exists()
+    ## TODO: only delete after 2 days
+    twoDaysAgo = int(time.time())- 60*60*24
+    filter = Attr('conv_count').eq('0') & Attr('deleted_date').not_exists() & Attr('created_at').lt(str(twoDaysAgo))
     proj = "id, conv_count, created_at, email, deleted_date"
     response = table.scan(
             ProjectionExpression=proj,
@@ -88,3 +91,6 @@ def get_users_with_zero_chats():
     data = sorted(data, key=lambda x: x['created_at'], reverse=False)
     print("data len [{}]".format(len(data)))
     return data
+
+if __name__ == '__main__':
+    print(len(get_users_with_zero_chats()))
