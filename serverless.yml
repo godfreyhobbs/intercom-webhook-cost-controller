@@ -26,5 +26,5 @@ functions:
     handler: cronHandler.deleteUsers
     timeout: 300 # the intercom api calls can be pretty slow
     events:
-      # Invoke Lambda function every 20 minute (must be greater than 5 mins 
+      # Invoke Lambda function every 20 minute (must be greater than 5 mins )
       - schedule: rate(20 minutes)

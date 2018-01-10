@@ -53,13 +53,18 @@ def getAllUsers(limit=20000, sort_direction='asc'):
 
 
 def hasConversations(id):
-    conn.request("GET", "/conversations?type=user&intercom_user_id={}".format(id), headers=headers)
+    result = get_conversation_count(id) > 0
+    return result
 
+
+def get_conversation_count(id):
+    conn.request("GET", "/conversations?type=user&intercom_user_id={}".format(id), headers=headers)
     res = conn.getresponse()
     output = res.read().decode("utf-8")
     response_json = json.loads(output)
     print(output)
-    return len(response_json['conversations']) > 0
+    result = len(response_json['conversations'])
+    return result
 
 
 def getUser(id):
@@ -93,5 +98,3 @@ def getNumToDelete(target_people_count):
     result = people_count - target_people_count
     print('numToDelete to reach Target peple count is [{}]'.format(result))
     return result
-
-

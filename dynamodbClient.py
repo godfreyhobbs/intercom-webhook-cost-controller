@@ -1,7 +1,7 @@
 import os
 
 import boto3
-import intercomClient
+from boto3.dynamodb.conditions import Attr
 
 EMPTY_STRING = 'EMPTY_STRING'
 dynamodb = boto3.resource('dynamodb')
@@ -24,7 +24,8 @@ def clean_json(node):
                 if item == '':
                     node[key] = EMPTY_STRING
 
-def save_to_dynamodb(person):
+
+def save_to_dynamodb(person, conv_count=0):
     # fixup
     clean_json(person)
     print('{} {}'.format(person['created_at'], person['id']))
@@ -38,7 +39,7 @@ def save_to_dynamodb(person):
             person['location_data']['longitude'] = str(person['location_data']['longitude'])
 
     email = EMPTY_STRING
-    if 'email' in person and  person['email']:
+    if 'email' in person and person['email']:
         email = person['email']
 
     custom_attr_val = False
@@ -52,21 +53,34 @@ def save_to_dynamodb(person):
         person_user_id = person['user_id']
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
     return table.put_item(
-        Item={
-            'id': person['id'],
-            'user_id': person_user_id,
-            'email': email,
-            'created_at': str(person['created_at']),
-            custom_attr_key: custom_attr_val,
-            'body': (person)
-        }
+            Item={
+                'id': person     ['id'],
+                'user_id':       person_user_id,
+                'email':         email,
+                'created_at':    str(person['created_at']),
+                custom_attr_key: custom_attr_val,
+                'body':          (person),
+                'conv_count':    conv_count
+            }
     )
 
-# if __name__ == '__main__':
-    # run to catch up.  Adds all existing users to dynamodb
-    # limit = 20000
-    # users_json = intercomClient.getAllUsers(limit)
-    # print (users_json)
-    #
-    # for person in users_json:
-    #      print(save_to_dynamodb(person))
+def get_users_with_zero_chats():
+
+    table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
+    # consider adding limit to scan
+    filter = Attr('conv_count').eq('0')
+    proj = "id, conv_count, created_at, email"
+    response = table.scan(
+            ProjectionExpression=proj,
+            FilterExpression=filter
+    )
+    data = response['Items']
+    while 'LastEvaluatedKey' in response:
+        response = table.scan(
+                ProjectionExpression=proj,
+                FilterExpression=filter,
+                ExclusiveStartKey=response['LastEvaluatedKey'])
+        data.extend(response['Items'])
+    data = sorted(data, key=lambda x: x['created_at'], reverse=False)
+    print("data len [{}]".format(len(data)))
+    return data

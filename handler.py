@@ -12,7 +12,9 @@ def webhook(event, context):
     webhook_body = json.loads(event['body']);
     person = webhook_body['data']['item']
     #fetch using the intercom rest ap, since the webhook object model does not have consistent types for timestamps
-    save_to_dynamodb(intercomClient.getUser(person['id']));
+
+    conv_count = intercomClient.get_conversation_count(person['id'])
+    save_to_dynamodb(intercomClient.getUser(person['id']), conv_count);
 
     response = {
         "statusCode": 200,
