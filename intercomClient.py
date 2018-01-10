@@ -96,5 +96,5 @@ def getNumToDelete(target_people_count):
     response_json = json.loads(output)
     people_count = response_json['lead']['count'] + response_json['user']['count']
     result = people_count - target_people_count
-    print('numToDelete to reach Target peple count is [{}]'.format(result))
+    print('numToDelete to reach Target people count is [{}]'.format(result))
     return result

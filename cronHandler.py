@@ -1,12 +1,15 @@
+import time
+
 import intercomClient
 from dynamodbClient import save_to_dynamodb, get_users_with_zero_chats
 
 # Value is set to keep cost under the 2000 user limit
 TARGET_PEOPLE_COUNT = 2000
 
+
 def deleteUsers(event, context):
     # setting low due to rate limiting errors
-    LIMIT = 500
+    LIMIT = 200
     num_to_delete = min(intercomClient.getNumToDelete(TARGET_PEOPLE_COUNT), LIMIT)
 
     users_data = get_users_with_zero_chats()
@@ -17,7 +20,8 @@ def deleteUsers(event, context):
         try:
             conv_count = intercomClient.get_conversation_count(curr_person['id'])
             user = intercomClient.getUser(curr_person['id'])
-            print(save_to_dynamodb(user, conv_count))
+            deleted_date = int(time.time())
+            print(save_to_dynamodb(user, conv_count, deleted_date))
             if (conv_count == 0):
                 print(intercomClient.deletePerson(user['id']))
 
@@ -25,6 +29,6 @@ def deleteUsers(event, context):
             print("failure for [{}]".format(curr_person['id']))
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
     # delete users so as not to be charged by intercoms pricing model.
-    # deleteUsers({}, {})
+    deleteUsers({}, {})

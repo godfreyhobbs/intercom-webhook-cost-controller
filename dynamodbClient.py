@@ -6,6 +6,7 @@ from boto3.dynamodb.conditions import Attr
 EMPTY_STRING = 'EMPTY_STRING'
 dynamodb = boto3.resource('dynamodb')
 
+
 # fix up empty string
 def clean_json(node):
     for key, item in node.items():
@@ -25,7 +26,7 @@ def clean_json(node):
                     node[key] = EMPTY_STRING
 
 
-def save_to_dynamodb(person, conv_count=0):
+def save_to_dynamodb(person, conv_count=0, deleted_date=False):
     # fixup
     clean_json(person)
     print('{} {}'.format(person['created_at'], person['id']))
@@ -52,24 +53,27 @@ def save_to_dynamodb(person, conv_count=0):
     if person['user_id']:
         person_user_id = person['user_id']
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
+    user_data = {'id': person     ['id'],
+                 'user_id':       person_user_id,
+                 'email':         email,
+                 'created_at':    str(person['created_at']),
+                 custom_attr_key: custom_attr_val,
+                 'body':          (person),
+                 'conv_count':    str(conv_count),
+                 }
+    if deleted_date:
+        user_data['deleted_date'] = str(deleted_date)
+
     return table.put_item(
-            Item={
-                'id': person     ['id'],
-                'user_id':       person_user_id,
-                'email':         email,
-                'created_at':    str(person['created_at']),
-                custom_attr_key: custom_attr_val,
-                'body':          (person),
-                'conv_count':    conv_count
-            }
+            Item=user_data
     )
 
-def get_users_with_zero_chats():
 
+def get_users_with_zero_chats():
     table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
     # consider adding limit to scan
-    filter = Attr('conv_count').eq('0')
-    proj = "id, conv_count, created_at, email"
+    filter = Attr('conv_count').eq('0') & Attr('deleted_date').not_exists()
+    proj = "id, conv_count, created_at, email, deleted_date"
     response = table.scan(
             ProjectionExpression=proj,
             FilterExpression=filter
